@@ -4,19 +4,14 @@
   </div>
 </template>
 
-<script>
-  import { mapGetters } from 'vuex'
+<script type="text/ecmascript-6">
+  import { ebookMixin } from '../../utils/mixin'
   import Epub from 'epubjs'
 
   global.epub = Epub
   export default {
     name: 'EbookReader',
-    computed: {
-      ...mapGetters([
-        'fileName',
-        'menuVisible'
-      ])
-    },
+    mixins: [ebookMixin],
     methods: {
       prevPage() {
         if (this.rendition) {
@@ -31,27 +26,35 @@
         }
       },
       toggleTitleAndMenu() {
-        this.$store.dispatch('setMenuVisible', !this.menuVisible)
+        if (this.menuVisible) {
+          this.setSettingVisible(-1)
+          this.setFontFamilyVisible(false)
+        }
+        this.setMenuVisible(!this.menuVisible)
       },
       hideTitleAndMenu() {
-        this.$store.dispatch('setMenuVisible', false)
+        // this.$store.dispatch('setMenuVisible', false)
+        this.setMenuVisible(false)
+        this.setSettingVisible(-1)
+        this.setFontFamilyVisible(false)
       },
       initEpub() {
         const url = 'http://192.168.43.178:8081/epub/' + this.fileName + '.epub'
-        console.log(url)
         this.book = new Epub(url)
-        console.log(this.book)
+        this.setCurrentBook(this.book)
         this.rendition = this.book.renderTo('read', {
           width: innerWidth,
           height: innerHeight,
           methods: 'default'
         })
         this.rendition.display()
+        // 动态绑定事件到iframe上
         this.rendition.on('touchstart', event => {
           this.touchStartX = event.changedTouches[0].clientX
           this.touchStartTime = event.timeStamp
         })
         this.rendition.on('touchend', event => {
+          // 通过手势来实现电子书的翻页
           const offsetX = event.changedTouches[0].clientX - this.touchStartX
           const time = event.timeStamp - this.touchStartTime
           if (time < 500 && offsetX > 40) {
@@ -64,10 +67,18 @@
           event.preventDefault()
           event.stopPropagation()
         })
+        this.rendition.hooks.content.register(contents => {
+          Promise.all([
+              contents.addStylesheet('http://192.168.43.178:8081/fonts/daysOne.css'),
+              contents.addStylesheet('http://192.168.43.178:8081/fonts/cabin.css'),
+              contents.addStylesheet('http://192.168.43.178:8081/fonts/montserrat.css'),
+              contents.addStylesheet('http://192.168.43.178:8081/fonts/tangerine.css')
+            ]).then(() => { console.log('完毕') })
+        })
       }
     },
     mounted () {
-      this.$store.dispatch('setFileName', this.$route.params.fileName.split('|').join('/'))
+      this.setFileName(this.$route.params.fileName.split('|').join('/'))
         .then(() => {
         this.initEpub()
       })
