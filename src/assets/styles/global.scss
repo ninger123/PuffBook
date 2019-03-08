@@ -1,7 +1,3 @@
 @import "./reset";
-
-$radio:375/10;
-
-@function px2rem($px) {
-  @return $px / $radio + rem;
-}
+@import "./mixin";
+@import "./transition";
