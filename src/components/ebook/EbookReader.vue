@@ -7,6 +7,7 @@
 <script type="text/ecmascript-6">
   import { ebookMixin } from '../../utils/mixin'
   import Epub from 'epubjs'
+  import { getFontFamily, saveFontFamily, getFontSize, saveFontSize } from '../../utils/localStorage'
 
   global.epub = Epub
   export default {
@@ -38,6 +39,24 @@
         this.setSettingVisible(-1)
         this.setFontFamilyVisible(false)
       },
+      initFontSize() {
+        let fontSize = getFontSize(this.fileName)
+        if (!fontSize) {
+          saveFontSize(this.fileName, this.defaultFontSize)
+        } else {
+          this.rendition.themes.fontSize(fontSize)
+          this.setDefaultFontSize(fontSize)
+        }
+      },
+      initFontFamily() {
+        let font = getFontFamily(this.fileName)
+        if (!font) {
+          saveFontFamily(this.fileName, this.defaultFontFamily)
+        } else {
+          this.rendition.themes.font(font)
+          this.setDefaultFontFamily(font)
+        }
+      },
       initEpub() {
         const url = 'http://192.168.43.178:8081/epub/' + this.fileName + '.epub'
         this.book = new Epub(url)
@@ -47,7 +66,10 @@
           height: innerHeight,
           methods: 'default'
         })
-        this.rendition.display()
+        this.rendition.display().then(() => {
+          this.initFontSize()
+          this.initFontFamily()
+        })
         // 动态绑定事件到iframe上
         this.rendition.on('touchstart', event => {
           this.touchStartX = event.changedTouches[0].clientX
