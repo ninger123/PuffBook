@@ -7,8 +7,13 @@
 <script type="text/ecmascript-6">
   import { ebookMixin } from '../../utils/mixin'
   import Epub from 'epubjs'
-  import { getFontFamily, saveFontFamily, getFontSize, saveFontSize } from '../../utils/localStorage'
-
+  import { getFontFamily,
+           saveFontFamily,
+           getFontSize,
+           saveFontSize,
+           getTheme,
+           saveTheme
+  } from '../../utils/localStorage'
   global.epub = Epub
   export default {
     name: 'EbookReader',
@@ -57,19 +62,41 @@
           this.setDefaultFontFamily(font)
         }
       },
-      initEpub() {
-        const url = 'http://192.168.43.178:8081/epub/' + this.fileName + '.epub'
-        this.book = new Epub(url)
-        this.setCurrentBook(this.book)
+      initTheme() {
+        let defaultTheme = getTheme(this.fileName)
+        if (!defaultTheme) {
+          defaultTheme = this.themeList[0].name
+          saveTheme(this.fileName, defaultTheme)
+        }
+        this.setDefaultTheme(defaultTheme)
+        // 注册
+        this.themeList.forEach(theme => {
+          this.rendition.themes.register(theme.name, theme.style)
+        })
+        this.rendition.themes.select(defaultTheme)
+      },
+      initRendition() {
         this.rendition = this.book.renderTo('read', {
           width: innerWidth,
           height: innerHeight,
           methods: 'default'
         })
         this.rendition.display().then(() => {
+          this.initTheme()
           this.initFontSize()
           this.initFontFamily()
+          this.initGlobalStyle()
         })
+        this.rendition.hooks.content.register(contents => {
+          Promise.all([
+            contents.addStylesheet('http://192.168.43.178:8081/fonts/daysOne.css'),
+            contents.addStylesheet('http://192.168.43.178:8081/fonts/cabin.css'),
+            contents.addStylesheet('http://192.168.43.178:8081/fonts/montserrat.css'),
+            contents.addStylesheet('http://192.168.43.178:8081/fonts/tangerine.css')
+          ]).then(() => { console.log('完毕') })
+        })
+      },
+      initGesture() {
         // 动态绑定事件到iframe上
         this.rendition.on('touchstart', event => {
           this.touchStartX = event.changedTouches[0].clientX
@@ -89,13 +116,19 @@
           event.preventDefault()
           event.stopPropagation()
         })
-        this.rendition.hooks.content.register(contents => {
-          Promise.all([
-              contents.addStylesheet('http://192.168.43.178:8081/fonts/daysOne.css'),
-              contents.addStylesheet('http://192.168.43.178:8081/fonts/cabin.css'),
-              contents.addStylesheet('http://192.168.43.178:8081/fonts/montserrat.css'),
-              contents.addStylesheet('http://192.168.43.178:8081/fonts/tangerine.css')
-            ]).then(() => { console.log('完毕') })
+      },
+      initEpub() {
+        const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
+        this.book = new Epub(url)
+        this.setCurrentBook(this.book)
+        this.initRendition()
+        this.initGesture()
+        this.book.ready.then(() => {
+          // 传入每页显示的文字数
+          return this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16))
+        }).then(locations => {
+          // console.log(locations)
+          this.setBookAvailable(true)
         })
       }
     },
