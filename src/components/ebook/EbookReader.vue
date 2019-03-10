@@ -12,7 +12,8 @@
            getFontSize,
            saveFontSize,
            getTheme,
-           saveTheme
+           saveTheme,
+           getLocation
   } from '../../utils/localStorage'
   global.epub = Epub
   export default {
@@ -21,13 +22,17 @@
     methods: {
       prevPage() {
         if (this.rendition) {
-          this.rendition.prev()
+          this.rendition.prev().then(() => {
+            this.refreshLocation()
+          })
           this.hideTitleAndMenu()
         }
       },
       nextPage() {
         if (this.rendition) {
-          this.rendition.next()
+          this.rendition.next().then(() => {
+            this.refreshLocation()
+          })
           this.hideTitleAndMenu()
         }
       },
@@ -81,7 +86,8 @@
           height: innerHeight,
           methods: 'default'
         })
-        this.rendition.display().then(() => {
+        const location = getLocation(this.fileName)
+        this.display(location, () => {
           this.initTheme()
           this.initFontSize()
           this.initFontFamily()
@@ -127,8 +133,8 @@
           // 传入每页显示的文字数
           return this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16))
         }).then(locations => {
-          // console.log(locations)
           this.setBookAvailable(true)
+          this.refreshLocation()
         })
       }
     },
