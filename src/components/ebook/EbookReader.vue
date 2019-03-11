@@ -15,6 +15,8 @@
            saveTheme,
            getLocation
   } from '../../utils/localStorage'
+  import { flatten } from '../../utils/book'
+
   global.epub = Epub
   export default {
     name: 'EbookReader',
@@ -42,12 +44,6 @@
           this.setFontFamilyVisible(false)
         }
         this.setMenuVisible(!this.menuVisible)
-      },
-      hideTitleAndMenu() {
-        // this.$store.dispatch('setMenuVisible', false)
-        this.setMenuVisible(false)
-        this.setSettingVisible(-1)
-        this.setFontFamilyVisible(false)
       },
       initFontSize() {
         let fontSize = getFontSize(this.fileName)
@@ -99,7 +95,7 @@
             contents.addStylesheet('http://192.168.43.178:8081/fonts/cabin.css'),
             contents.addStylesheet('http://192.168.43.178:8081/fonts/montserrat.css'),
             contents.addStylesheet('http://192.168.43.178:8081/fonts/tangerine.css')
-          ]).then(() => { console.log('完毕') })
+          ]).then(() => {})
         })
       },
       initGesture() {
@@ -123,12 +119,33 @@
           event.stopPropagation()
         })
       },
+      parseBook() {
+        this.book.loaded.cover.then(cover => {
+          this.book.archive.createUrl(cover).then(url => {
+            this.setCover(url)
+          })
+        })
+        this.book.loaded.metadata.then(metadata => {
+          this.setMetadata(metadata)
+        })
+        this.book.loaded.navigation.then(nav => {
+          const navItem = flatten(nav.toc)
+          function find(item, level = 0) {
+            return !item.parent ? level : find(navItem.filter(parentItem => parentItem.id === item.parent)[0], ++level)
+          }
+          navItem.forEach(item => {
+            item.level = find(item)
+          })
+          this.setNavigation(navItem)
+        })
+      },
       initEpub() {
         const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
         this.book = new Epub(url)
         this.setCurrentBook(this.book)
         this.initRendition()
         this.initGesture()
+        this.parseBook()
         this.book.ready.then(() => {
           // 传入每页显示的文字数
           return this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16))
