@@ -3,8 +3,8 @@
       <div class="ebook-loading-wrapper">
         <div class="ebook-loading-item" v-for="(item,index) in data" :key="index">
           <div class="ebook-loading-line-wrapper" v-for="(subItem,subIndex) in item" :key="subIndex">
-            <div class="ebook-loading-line"></div>
-            <div class="ebook-loading-mask"></div>
+            <div class="ebook-loading-line" ref="line"></div>
+            <div class="ebook-loading-mask" ref="mask"></div>
           </div>
         </div>
         <div class="ebook-loading-center"></div>
@@ -13,6 +13,8 @@
 </template>
 
 <script>
+  import { px2rem } from '../../utils/utils'
+
   export default {
     name: 'EbookLoading',
     data() {
@@ -20,8 +22,62 @@
         data: [
           [{}, {}, {}],
           [{}, {}, {}]
-        ]
+        ],
+        maskWidth: [
+          { value: 0 },
+          { value: 0 },
+          { value: 0 },
+          { value: 0 },
+          { value: 0 },
+          { value: 0 }
+        ],
+        lineWidth: [
+          { value: 16 },
+          { value: 16 },
+          { value: 16 },
+          { value: 16 },
+          { value: 16 },
+          { value: 16 }
+        ],
+        add: true,
+        end: false
       }
+    },
+    mounted () {
+      this.task = setInterval(() => {
+        this.$refs.mask.forEach((item, index) => {
+          const mask = this.$refs.mask[index]
+          const line = this.$refs.line[index]
+          let maskWidth = this.maskWidth[index]
+          let lineWidth = this.lineWidth[index]
+          if (this.add) {
+            maskWidth.value++
+            lineWidth.value--
+          } else {
+            maskWidth.value--
+            lineWidth.value++
+          }
+          mask.style.width = `${px2rem(maskWidth.value)}rem`
+          mask.style.flex = `0 0 ${px2rem(maskWidth.value)}rem`
+          line.style.width = `${px2rem(lineWidth.value)}rem`
+          line.style.flex = `0 0 ${px2rem(lineWidth.value)}rem`
+          if (index === this.maskWidth.length - 1) {
+            if (this.add) {
+              if (maskWidth.value === 16) {
+                this.end = true
+              }
+            } else {
+                if (maskWidth.value === 0) {
+                  this.end = true
+                }
+            }
+          }
+          if (this.end) {
+              this.add = !this.add
+              this.end = false
+          }
+        })
+      }, 35)
     }
   }
 </script>
