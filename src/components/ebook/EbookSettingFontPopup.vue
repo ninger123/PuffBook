@@ -58,29 +58,31 @@
     position: absolute;
     bottom:0;
     left:0;
-    z-index:300;
+    z-index:350;
     width: 100%;
     background: white;
     box-shadow: 0 px2rem(-4) px2rem(6) rgba(0,0,0,.1);
     .ebook-popup-title{
       position: relative;
-      padding: px2rem(15);
-      box-sizing: border-box;
-      border-bottom: px2rem(1) solid #b8b9bb;
       text-align: center;
+      padding: px2rem(15);
+      border-bottom: px2rem(1) solid #b8b9bb;
+      box-sizing: border-box;
       @include center;
+      .ebook-popup-title-text{
+        font-size: px2rem(14);
+        font-weight: bold;
+      }
       .ebook-popup-title-icon{
         position: absolute;
         left:px2rem(15);
         top:0;
         height: 100%;
-        font-size: px2rem(16);
-        font-weight: bold;
         @include center;
-      }
-      .ebook-popup-title-text{
-        font-size: px2rem(14);
-        font-weight: bold;
+        .icon-down2{
+          font-size: px2rem(16);
+          font-weight: bold;
+        }
       }
     }
     .ebook-popup-list-wrapper{
