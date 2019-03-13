@@ -31,6 +31,7 @@
 <script>
   import { ebookMixin } from '../../utils/mixin'
   import EbookSlideContents from './EbookSlideContents'
+  import EbookBookmark from './EbookSlideBookmark'
   import EbookLoading from './EbookLoading'
 
   export default {
@@ -43,7 +44,7 @@
       return {
         currentTab: 1,
         content: EbookSlideContents,
-        bookmark: null
+        bookmark: EbookBookmark
       }
     },
     methods: {
@@ -60,7 +61,7 @@
     position: absolute;
     top:0;
     left:0;
-    z-index:300;
+    z-index:350;
     display: flex;
     width: 100%;
     height:100%;

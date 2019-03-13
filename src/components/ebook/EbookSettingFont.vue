@@ -29,7 +29,7 @@
 </template>
 
 <script>
-  import { FONT_SIZE_LIST} from '../../utils/book'
+  import { FONT_SIZE_LIST } from '../../utils/book'
   import { ebookMixin } from '../../utils/mixin'
   import { saveFontSize } from '../../utils/localStorage'
 
