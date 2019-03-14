@@ -19,8 +19,12 @@
           <img :src="cover" class="slide-contents-book-img">
         </div>
         <div class="slide-contents-book-info-wrapper">
-          <div class="slide-contents-book-title">{{metadata.title}}</div>
-          <div class="slide-contents-book-author">{{metadata.creator}}</div>
+          <div class="slide-contents-book-title">
+            <span class="slide-contents-book-title-text">{{metadata.title}}</span>
+          </div>
+          <div class="slide-contents-book-author">
+            <span class="slide-contents-book-author-text">{{metadata.creator}}</span>
+          </div>
         </div>
         <div class="slide-contents-book-progress-wrapper">
           <div class="slide-contents-book-progress">
@@ -33,10 +37,9 @@
       <scroll class="slide-contents-list" :top="156" :bottom="48" v-show="!searchVisible">
         <div class="slide-contents-item" v-for="(item, index) in navigation" :key="index">
           <span class="slide-contents-item-label" :class="{'selected': section === index}" :style="contentItemStyle(item)" @click="displayContent(item.href)">{{item.label}}</span>
-          <span class="slide-contents-item-page"></span>
         </div>
       </scroll>
-      <scroll class="sli`de-search-list" :top="66" :bottom="48" v-show="searchVisible">
+      <scroll class="slide-search-list" :top="66" :bottom="48" v-show="searchVisible">
         <div class="slide-search-item"
              v-for="(item, index) in searchList"
              :key="index"
@@ -123,6 +126,7 @@
       box-sizing: border-box;
       .slide-contents-search-input-wrapper{
         flex:1;
+        border-radius: px2rem(3);
         @include center;
         .slide-contents-search-icon{
           flex: 0 0 px2rem(28);
@@ -165,16 +169,23 @@
         padding:0 px2rem(10) ;
         box-sizing: border-box;
         .slide-contents-book-title{
-          width: px2rem(154.02);
+          // width: px2rem(154.02);
           font-size: px2rem(14);
           line-height: px2rem(16);
-          @include ellipsis2(2);
+          @include left;
+          .slide-contents-book-title-text{
+            @include ellipsis2(3);
+          }
         }
         .slide-contents-book-author{
-          width: px2rem(154.02);
+          // width: px2rem(154.02);
           font-size: px2rem(12);
+          line-height: px2rem(14);
           margin-top: px2rem(5);
-          @include ellipsis;
+          @include left;
+          .slide-contents-book-author-text{
+            @include ellipsis2(1);
+          }
         }
       }
       .slide-contents-book-progress-wrapper{
@@ -206,7 +217,6 @@
           line-height: px2rem(16);
           @include ellipsis;
         }
-        .slide-contents-item-page {}
       }
     }
     .slide-search-list {
@@ -217,7 +227,6 @@
         line-height: px2rem(16);
         padding: px2rem(20) 0;
         box-sizing: border-box;
-        width: 100%;
       }
     }
     }
