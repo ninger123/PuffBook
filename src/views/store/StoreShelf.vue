@@ -1,10 +1,11 @@
 <template>
   <div class="store-shelf">
     <shelf-title></shelf-title>
-    <scroll class="store-shelf-scroll-wrapper" :top="0" @onScroll="onScroll">
+    <scroll class="store-shelf-scroll-wrapper" :top="0" :bottom="scrollBottom" @onScroll="onScroll" ref="scroll">
       <shelf-search></shelf-search>
       <shelf-list></shelf-list>
     </scroll>
+    <shelf-footer></shelf-footer>
   </div>
 </template>
 
@@ -14,13 +15,26 @@
   import Scroll from '../../components/common/Scroll'
   import ShelfSearch from '../../components/shelf/ShelfSearch'
   import ShelfList from '../../components/shelf/ShelfList'
-  import { shelf } from '../../api/store'
-  import { appendAddToShelf } from '../../utils/store'
+  import ShelfFooter from '../../components/shelf/ShelfFooter'
 
   export default {
     name: 'StoreShelf',
     mixins: [storeShelfMixin],
+    watch: {
+      isEditMode(isEditMode) {
+        this.scrollBottom = isEditMode ? 48 : 0
+        this.$nextTick(() => {
+          this.$refs.scroll.refresh()
+        })
+      }
+    },
+    data() {
+      return {
+        scrollBottom: 0
+      }
+    },
     components: {
+      ShelfFooter,
       ShelfList,
       ShelfSearch,
       Scroll,
@@ -29,17 +43,10 @@
     methods: {
       onScroll(offsetY) {
         this.setOffsetY(offsetY)
-      },
-      goShelfList() {
-        shelf().then(response => {
-          if (response.status === 200 && response.data && response.data.bookList) {
-            this.setShelfList(appendAddToShelf(response.data.bookList))
-          }
-        })
       }
     },
     mounted () {
-      this.goShelfList()
+      this.getShelfList()
     }
   }
 </script>

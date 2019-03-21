@@ -17,6 +17,8 @@
 
 <script>
   import { storeShelfMixin } from '../../utils/mixin'
+  import { clearLocalForage } from '../../utils/localForage'
+  import { clearLocalStorage } from '../../utils/localStorage'
 
   export default {
     name: 'ShelfTitle',
@@ -43,10 +45,19 @@
     },
     methods: {
       onEditClick() {
+        if (!this.isEditMode) {
+          this.setShelfSelected([])
+          this.shelfList.forEach(item => { item.selected = false })
+        }
         this.setIsEditMode(!this.isEditMode)
       },
       clearCache() {
-        alert('clear')
+        clearLocalStorage()
+        clearLocalForage()
+        this.setShelfList([])
+        this.setShelfSelected([])
+        this.getShelfList()
+        this.simpleToast(this.$t('shelf.clearCacheSuccess'))
       }
     }
   }
