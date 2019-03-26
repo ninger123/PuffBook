@@ -10,7 +10,7 @@ const listData = require('./src/mock/bookList')
 const flatListData = require('./src/mock/bookFlatList')
 
 module.exports = {
-  baseUrl: process.env.NODE_ENV === 'production'
+  publicPath: process.env.NODE_ENV === 'production'
     ? './'
     : '/',
   devServer: {
@@ -19,6 +19,13 @@ module.exports = {
       mock(app, '/book/shelf', shelfData)
       mock(app, '/book/list', listData)
       mock(app, '/book/flat-list', flatListData)
+    }
+  },
+  configureWebpack: {
+    performance: {
+      hints: 'warning',
+      maxAssetSize: 524288,
+      maxEntrypointSize: 524288
     }
   }
 }

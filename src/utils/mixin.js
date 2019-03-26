@@ -1,7 +1,7 @@
 import { mapGetters, mapActions } from 'vuex'
 import { themeList, addCss, removeAllCss, getReadTimeByMinute } from './book'
 import { getBookmark, saveLocation, getBookShelf, saveBookShelf } from './localStorage'
-import { gotoBookDetail, appendAddToShelf } from './store'
+import { gotoBookDetail, appendAddToShelf, computeId, removeAddFromShelf } from './store'
 import { shelf } from '../api/store'
 
 export const storeShelfMixin = {
@@ -11,7 +11,9 @@ export const storeShelfMixin = {
       'shelfList',
       'shelfSelected',
       'shelfTitleVisible',
-      'offsetY'
+      'offsetY',
+      'shelfCategory',
+      'currentType'
     ])
   },
   methods: {
@@ -20,10 +22,18 @@ export const storeShelfMixin = {
       'setShelfList',
       'setShelfSelected',
       'setShelfTitleVisible',
-      'setOffsetY'
+      'setOffsetY',
+      'setShelfCategory',
+      'setCurrentType'
     ]),
     showBookDetail(book) {
       gotoBookDetail(this, book)
+    },
+    getCategoryList(title) {
+      this.getShelfList().then(() => {
+        const categoryList = this.shelfList.filter(book => book.type === 2 && book.title === title)[0]
+        this.setShelfCategory(categoryList)
+      })
     },
     getShelfList() {
       let shelfList = getBookShelf()
@@ -32,12 +42,29 @@ export const storeShelfMixin = {
           if (response.status === 200 && response.data && response.data.bookList) {
             shelfList = appendAddToShelf(response.data.bookList)
             saveBookShelf(shelfList)
-            this.setShelfList(shelfList)
+            return this.setShelfList(shelfList)
           }
         })
       } else {
-        this.setShelfList(shelfList)
+        return this.setShelfList(shelfList)
       }
+    },
+    moveOutOfGroup(f) {
+      this.setShelfList(this.shelfList.map(book => {
+        if (book.type === 2 && book.itemList) {
+          // 保留下来没有被选中的元素
+          book.itemList = book.itemList.filter(subBook => !subBook.selected)
+        }
+        return book
+      })).then(() => {
+        // 把选中的电子书添加到书架的最后
+        const list = computeId(appendAddToShelf([].concat(
+          removeAddFromShelf(this.shelfList), ...this.shelfSelected)))
+        this.setShelfList(list).then(() => {
+          this.simpleToast(this.$t('shelf.moveBookOutSuccess'))
+          if (f) f()
+        })
+      })
     }
   }
 }

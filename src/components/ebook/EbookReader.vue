@@ -168,10 +168,10 @@
         })
         this.rendition.hooks.content.register(contents => {
           Promise.all([
-            contents.addStylesheet('http://192.168.43.178:8081/fonts/daysOne.css'),
-            contents.addStylesheet('http://192.168.43.178:8081/fonts/cabin.css'),
-            contents.addStylesheet('http://192.168.43.178:8081/fonts/montserrat.css'),
-            contents.addStylesheet('http://192.168.43.178:8081/fonts/tangerine.css')
+            contents.addStylesheet(`${process.env.VUE_APP_RES_URL}/fonts/daysOne.css`),
+            contents.addStylesheet(`${process.env.VUE_APP_RES_URL}/fonts/cabin.css`),
+            contents.addStylesheet(`${process.env.VUE_APP_RES_URL}/fonts/montserrat.css`),
+            contents.addStylesheet(`${process.env.VUE_APP_RES_URL}/fonts/tangerine.css`)
           ]).then(() => {})
         })
       },
@@ -226,6 +226,32 @@
           // 传入每页显示的文字数
           return this.book.locations.generate(750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16))
         }).then(locations => {
+          this.navigation.forEach(nav => {
+            nav.pagelist = []
+          })
+          locations.forEach(item => {
+            const loc = item.match(/\[(.*)\]!/)[1]
+            this.navigation.forEach(nav => {
+              if (nav.href) {
+                const href = nav.href.match(/^(.*)\.html$/)
+                if (href) {
+                  if (href[1] === loc) {
+                    nav.pagelist.push(item)
+                  }
+                }
+              }
+            })
+            let currentPage = 1
+            this.navigation.forEach((nav, index) => {
+              if (index === 0) {
+                nav.page = 1
+              } else {
+                nav.page = currentPage
+              }
+              currentPage += nav.pagelist.length + 1
+            })
+          })
+          this.setPagelist(locations)
           this.setBookAvailable(true)
           this.refreshLocation()
         })
@@ -242,7 +268,7 @@
         } else {
           this.setFileName(books.join('/'))
             .then(() => {
-              const url = process.env.VUE_APP_RES_URL + '/epub/' + this.fileName + '.epub'
+              const url = process.env.VUE_APP_EPUB_URL + '/' + this.fileName + '.epub'
               this.initEpub(url)
             })
         }
