@@ -5,6 +5,7 @@ Vue.use(Router)
 
 export default new Router({
   routes: [
+    // 重定向
     {
       path: '/',
       redirect: '/store'

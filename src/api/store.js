@@ -1,3 +1,5 @@
+// 做api请求
+
 import axios from 'axios'
 import { setLocalForage } from '../utils/localForage'
 

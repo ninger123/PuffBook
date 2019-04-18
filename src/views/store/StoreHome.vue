@@ -66,6 +66,7 @@
       }
     },
     mounted () {
+      // 发送请求 异步方式拿到结果
       home().then(response => {
         if (response && response.status === 200) {
           const data = response.data
